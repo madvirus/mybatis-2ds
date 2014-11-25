@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mybatis="http://mybatis.org/schema/mybatis-spring"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans   
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://mybatis.org/schema/mybatis-spring
+       http://mybatis.org/schema/mybatis-spring.xsd">
+
+	<tx:annotation-driven />
+
+	<mybatis:scan base-package="dao" factory-ref="masterSqlSF" name-generator="mybatis.MasterBeanNameGenerator" />
+	<mybatis:scan base-package="dao" factory-ref="slaveSqlSF" name-generator="mybatis.SlaveBeanNameGenerator" />
+
+	<bean
+		class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
+
+	<!-- master db -->
+	<bean id="masterTx"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="masterDS" />
+	</bean>
+
+	<bean id="masterDS" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+		<property name="driverClass" value="com.mysql.jdbc.Driver" />
+		<property name="jdbcUrl"
+			value="jdbc:mysql://localhost/shop?characterEncoding=utf8" />
+		<property name="user" value="spring4" />
+		<property name="password" value="spring4" />
+	</bean>
+
+	<bean id="masterSqlSF" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="masterDS" />
+		<property name="mapperLocations">
+			<list>
+				<value>classpath:/mybatis/itemdao.xml</value>
+				<value>classpath:/mybatis/purchaseorderdao.xml</value>
+			</list>
+		</property>
+		<property name="typeAliases">
+			<list>
+				<value>model.PurchaseOrder</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- slave db -->
+	<bean id="slaveTx"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="slaveDS" />
+	</bean>
+
+	<bean id="slaveDS" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+		<property name="driverClass" value="com.mysql.jdbc.Driver" />
+		<property name="jdbcUrl"
+			value="jdbc:mysql://localhost/shop?characterEncoding=utf8" />
+		<property name="user" value="spring4" />
+		<property name="password" value="spring4" />
+	</bean>
+
+	<bean id="slaveSqlSF" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="slaveDS" />
+		<property name="mapperLocations">
+			<list>
+				<value>classpath:/mybatis/itemdao.xml</value>
+				<value>classpath:/mybatis/purchaseorderdao.xml</value>
+			</list>
+		</property>
+		<property name="typeAliases">
+			<list>
+				<value>model.PurchaseOrder</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- master 사용 서비스 -->
+	<bean id="placeOrderService" class="service.PlaceOrderServiceImpl">
+		<property name="itemDao" ref="itemDaoMaster" />
+		<property name="paymentInfoDao" ref="paymentInfoDaoMaster" />
+		<property name="purchaseOrderDao" ref="purchaseOrderDaoMaster" />
+	</bean>
+
+	<!-- slave 사용 서비스 -->
+	<bean id="itemListService" class="service.ItemListService">
+		<property name="itemDao" ref="itemDaoSlave" />
+	</bean>
+</beans>
+
