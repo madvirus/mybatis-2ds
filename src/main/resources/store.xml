@@ -31,6 +31,7 @@
 			value="jdbc:mysql://localhost/shop?characterEncoding=utf8" />
 		<property name="user" value="spring4" />
 		<property name="password" value="spring4" />
+		<property name="dataSourceName" value="masterDS" />
 	</bean>
 
 	<bean id="masterSqlSF" class="org.mybatis.spring.SqlSessionFactoryBean">
@@ -61,6 +62,7 @@
 			value="jdbc:mysql://localhost/shop?characterEncoding=utf8" />
 		<property name="user" value="spring4" />
 		<property name="password" value="spring4" />
+		<property name="dataSourceName" value="slaveDS" />
 	</bean>
 
 	<bean id="slaveSqlSF" class="org.mybatis.spring.SqlSessionFactoryBean">
